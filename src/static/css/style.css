@@ -1,0 +1,33 @@
+:root {
+    --pichincha-yellow: #ffed5c;
+    --pichincha-navy: #002855;
+    --pichincha-green: #00a499;
+}
+
+.bg-pichincha-yellow {
+    background-color: var(--pichincha-yellow) !important;
+}
+
+.text-navy {
+    color: var(--pichincha-navy);
+}
+
+.btn-navy {
+    background-color: var(--pichincha-navy);
+    color: white;
+}
+
+.bg-light-green {
+    background-color: #e6f6f5;
+    font-size: 0.7rem;
+}
+
+.investment-card {
+    transition: transform 0.2s;
+    border-radius: 12px;
+}
+
+.investment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}

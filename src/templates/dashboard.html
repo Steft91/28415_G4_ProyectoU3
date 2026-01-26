@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+<nav class="navbar navbar-light bg-white border-bottom px-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+            <img src="{{ url_for('static', filename='img/logo_pichincha.png') }}" alt="Logo" width="150">
+        </a>
+        <div class="d-flex align-items-center">
+            <span class="me-3 text-navy small">Bienvenido, <strong>{{ current_user.username }}</strong></span>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">Cerrar Sesión</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid bg-pichincha-yellow py-5 mb-4 position-relative overflow-hidden">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-7 px-5">
+                <h1 class="display-5 fw-bold text-navy">Depósitos a plazo fijo – Inversiones para Personas</h1>
+                <p class="lead text-navy mb-4">Rentabiliza tu dinero con una inversión a una tasa de interés conveniente.</p>
+                <button class="btn btn-navy px-4 py-2 fw-bold">Invierte en línea</button>
+            </div>
+            <div class="col-md-5 text-center">
+                <img src="{{ url_for('static', filename='img/banner_person.png') }}" class="img-fluid" style="max-height: 300px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <ul class="nav nav-tabs border-0 mb-4">
+        <li class="nav-item">
+            <a class="nav-link active fw-bold border-0 border-bottom border-3 border-warning text-navy" href="#">Inversiones</a>
+        </li>
+        <li class="nav-item"><a class="nav-link text-muted border-0" href="#">Productos</a></li>
+        <li class="nav-item"><a class="nav-link text-muted border-0" href="#">Beneficios</a></li>
+        <li class="nav-item"><a class="nav-link text-muted border-0" href="#">Servicios</a></li>
+    </ul>
+
+    <h5 class="text-navy fw-bold mb-4">¿Qué estás buscando?</h5>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 investment-card">
+                <div class="card-body p-4">
+                    <span class="badge bg-light-green text-success mb-2">EN LÍNEA</span>
+                    <p class="text-muted small mb-1">Depósito a plazo</p>
+                    <h4 class="card-title text-navy fw-bold">Plazodolar – depósito a plazo fijo</h4>
+                    <div class="mt-5">
+                        <p class="mb-0 text-muted">Desde</p>
+                        <h3 class="fw-bold text-navy">$500</h3>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 p-4">
+                    <a href="{{ url_for('inversiones.plazodolar') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 investment-card">
+                <div class="card-body p-4">
+                    <p class="text-muted small mb-1">Depósito a plazo</p>
+                    <h4 class="card-title text-navy fw-bold">Armadolar</h4>
+                    <div class="mt-5">
+                        <h5 class="text-navy">Arma tu inversión</h5>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 p-4">
+                    <a href="{{ url_for('inversiones.armadolar') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 investment-card">
+                <div class="card-body p-4">
+                    <p class="text-muted small mb-1">Depósito a plazo</p>
+                    <h4 class="card-title text-navy fw-bold">Pago anticipado</h4>
+                    <div class="mt-5">
+                        <h5 class="text-navy">Intereses al inicio</h5>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 p-4">
+                    <a href="#" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
