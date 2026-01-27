@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h2 class="card-title mb-4 text-primary fw-bold">Simula tu Inversión Plazo Dólar</h2>
+                    
+                    <!-- Formulario de Simulación -->
+                    <form id="simulacionForm" action="#" method="POST"> <!-- Acción pendiente para el siguiente paso -->
+                        
+                        <!-- 1. Monto -->
+                        <div class="mb-4">
+                            <label for="monto" class="form-label fw-bold">¿Cuánto deseas invertir?</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-white border-end-0">$</span>
+                                <input type="number" class="form-control border-start-0 ps-0" id="monto" name="monto" 
+                                       placeholder="Mínimo ${{ monto_min }}" min="{{ monto_min }}" step="0.01" required>
+                            </div>
+                            <div class="form-text text-danger d-none" id="errorMonto">El monto mínimo es de ${{ monto_min }}</div>
+                        </div>
+
+                        <!-- 2. Tipo de Plazo -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Elige el plazo</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check custom-radio-btn">
+                                    <input class="form-check-input" type="radio" name="tipoPlazo" id="plazoDias" value="dias" checked>
+                                    <label class="form-check-label" for="plazoDias">Días</label>
+                                </div>
+                                <div class="form-check custom-radio-btn">
+                                    <input class="form-check-input" type="radio" name="tipoPlazo" id="plazoMeses" value="meses">
+                                    <label class="form-check-label" for="plazoMeses">Meses</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Tiempo -->
+                        <div class="mb-2">
+                            <div class="input-group input-group-lg">
+                                <input type="number" class="form-control" id="tiempo" name="tiempo" 
+                                       placeholder="Ej: 30" min="30" required>
+                                <span class="input-group-text bg-light" id="labelTiempo">días</span>
+                            </div>
+                            <div class="form-text text-danger d-none" id="errorTiempo">El plazo mínimo es de {{ plazo_min }} días</div>
+                        </div>
+
+                        <!-- Link Modal Tasas -->
+                        <div class="mb-4 text-end">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#modalTasas" class="text-decoration-none small text-primary">
+                                <i class="bi bi-info-circle"></i> Ver tasas de interés referenciales
+                            </a>
+                        </div>
+
+                        <!-- RESULTADOS DE LA SIMULACIÓN -->
+                        <div id="resultadoSimulacion" class="bg-light p-4 rounded-3 mb-4 d-none border">
+                            <h5 class="text-muted mb-3">Resumen de la simulación</h5>
+                            <div class="row text-center">
+                                <div class="col-4 border-end">
+                                    <small class="text-muted d-block">Plazo</small>
+                                    <span class="fw-bold fs-5" id="resPlazo">0 días</span>
+                                </div>
+                                <div class="col-4 border-end">
+                                    <small class="text-muted d-block">Tasa Interés</small>
+                                    <span class="fw-bold fs-5 text-success">{{ tasa }}%</span>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted d-block">Ganancia Est.</small>
+                                    <span class="fw-bold fs-5 text-success" id="resGanancia">$0.00</span>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="fw-bold text-secondary">Total a recibir:</span>
+                                <span class="fw-bold fs-3 text-dark" id="resTotal">$0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- RECOMENDACIONES -->
+                        <div id="recomendaciones" class="mb-4 d-none">
+                            <p class="fw-bold text-primary mb-2">
+                                <i class="bi bi-graph-up-arrow"></i> Incrementa el plazo y gana más:
+                            </p>
+                            <div class="card bg-white border-warning mb-2">
+                                <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="d-block small text-muted">A <span id="recDias">60</span> días</span>
+                                        <span class="fw-bold text-dark">Ganarías <span id="recGanancia">$0.00</span></span>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-warning text-dark" onclick="aplicarRecomendacion()">
+                                        Elegir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón Continuar -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-warning btn-lg text-white fw-bold" id="btnContinuar" disabled>
+                                Continuar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Tasas -->
+<div class="modal fade" id="modalTasas" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Tasas de Interés Referenciales</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped table-hover text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Plazo (Días)</th>
+                            <th>Tasa Anual</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>30 - 59</td><td>5.00%</td></tr>
+                        <tr><td>60 - 89</td><td>5.50%</td></tr>
+                        <tr><td>90 - 179</td><td>6.00%</td></tr>
+                        <tr><td>180 - 359</td><td>6.25%</td></tr>
+                        <tr><td>360+</td><td><strong>{{ tasa }}%</strong></td></tr>
+                    </tbody>
+                </table>
+                <small class="text-muted">* Tasas sujetas a condiciones del mercado.</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lógica de Simulación -->
+<script>
+    const tasaAnual = parseFloat("{{ tasa }}"); // Viene del backend (6.50)
+    const montoMin = parseFloat("{{ monto_min }}");
+    const plazoMinDias = parseInt("{{ plazo_min }}");
+
+    const inputMonto = document.getElementById('monto');
+    const inputTiempo = document.getElementById('tiempo');
+    const radiosPlazo = document.getElementsByName('tipoPlazo');
+    const labelTiempo = document.getElementById('labelTiempo');
+    const resultadoDiv = document.getElementById('resultadoSimulacion');
+    const recomendacionesDiv = document.getElementById('recomendaciones');
+    const btnContinuar = document.getElementById('btnContinuar');
+
+    // Elementos de resultado
+    const resPlazo = document.getElementById('resPlazo');
+    const resGanancia = document.getElementById('resGanancia');
+    const resTotal = document.getElementById('resTotal');
+
+    // Elementos de recomendación
+    const recDias = document.getElementById('recDias');
+    const recGanancia = document.getElementById('recGanancia');
+
+    function calcular() {
+        let monto = parseFloat(inputMonto.value);
+        let tiempo = parseInt(inputTiempo.value);
+        let esMeses = document.getElementById('plazoMeses').checked;
+
+        // Validaciones básicas visuales
+        if (!monto || monto < montoMin || !tiempo) {
+            resultadoDiv.classList.add('d-none');
+            recomendacionesDiv.classList.add('d-none');
+            btnContinuar.disabled = true;
+            return;
+        }
+
+        // Conversión a días para cálculo
+        let diasReales = esMeses ? tiempo * 30 : tiempo;
+
+        if (diasReales < plazoMinDias) {
+            document.getElementById('errorTiempo').classList.remove('d-none');
+            btnContinuar.disabled = true;
+            return;
+        } else {
+            document.getElementById('errorTiempo').classList.add('d-none');
+        }
+
+        // Fórmula Interés Simple: Capital * (Tasa/100) * (Dias / 360)
+        let interesGanado = monto * (tasaAnual / 100) * (diasReales / 360);
+        let total = monto + interesGanado;
+
+        // Mostrar Resultados
+        resPlazo.innerText = diasReales + " días";
+        resGanancia.innerText = "$" + interesGanado.toFixed(2);
+        resTotal.innerText = "$" + total.toFixed(2);
+        
+        resultadoDiv.classList.remove('d-none');
+        btnContinuar.disabled = false;
+
+        // Calcular Recomendación (Ej: +30 días)
+        let diasRec = diasReales + 30;
+        let interesRec = monto * (tasaAnual / 100) * (diasRec / 360);
+        
+        recDias.innerText = diasRec;
+        recGanancia.innerText = "$" + interesRec.toFixed(2);
+        recomendacionesDiv.classList.remove('d-none');
+    }
+
+    function aplicarRecomendacion() {
+        let tiempoActual = parseInt(inputTiempo.value) || 0;
+        let esMeses = document.getElementById('plazoMeses').checked;
+        
+        if (esMeses) {
+            inputTiempo.value = tiempoActual + 1; // Sumar 1 mes
+        } else {
+            inputTiempo.value = tiempoActual + 30; // Sumar 30 días
+        }
+        calcular();
+    }
+
+    // Event Listeners
+    inputMonto.addEventListener('input', calcular);
+    inputTiempo.addEventListener('input', calcular);
+    radiosPlazo.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            labelTiempo.innerText = e.target.value === 'meses' ? 'meses' : 'días';
+            calcular();
+        });
+    });
+</script>
+{% endblock %}

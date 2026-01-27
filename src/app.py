@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from flask_login import LoginManager, login_required
 from src.controllers.auth import auth
+from src.controllers.inversiones import inversiones
 from src.models.database import get_db_connection
 from src.models.entities import User
 
@@ -35,7 +36,7 @@ def load_user(user_id):
 
 # Registro de Blueprints
 app.register_blueprint(auth)
-# app.register_blueprint(inversiones_bp) # Registra el de inversiones cuando lo tengas
+app.register_blueprint(inversiones, url_prefix='/inversiones')
 
 
 if __name__ == '__main__':

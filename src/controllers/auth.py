@@ -35,3 +35,8 @@ def login():
             flash("Credenciales inválidas")
             
     return render_template('login.html')
+
+@auth.route('/logout')
+def logout():
+    logout_user() # Esto borra la sesión del usuario
+    return redirect(url_for('auth.login')) # Te devuelve a la pantalla de login
