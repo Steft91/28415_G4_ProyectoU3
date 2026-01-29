@@ -1,43 +1,74 @@
-from flask import Blueprint, render_template
+# src/controllers/inversiones.py
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from src.models.database import get_db_connection
-
+from src.models.database import get_cuentas_usuario, get_producto_info, procesar_inversion, simular_paso_tiempo
 inversiones = Blueprint('inversiones', __name__)
 
-@inversiones.route('/dashboard')
-@login_required
-def dashboard():
-    # Aquí podrías consultar el saldo del usuario usando la vista que creamos
-    # conn = get_db_connection()
-    # cur = conn.cursor()
-    # cur.execute("SELECT * FROM V_INV_CUENTAS_CLIENTE WHERE ID_CLIENTE = %s", (current_user.id,))
-    # cuentas = cur.fetchall()
-    
-    return render_template('dashboard.html')
-
-@inversiones.route('/plazodolar')
+@inversiones.route('/plazo-dolar', methods=['GET', 'POST'])
 @login_required
 def plazodolar():
-    # Obtenemos la configuración del producto desde la BD
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT tasa_anual, monto_min, plazo_min_dias 
-        FROM inv_producto 
-        WHERE codigo = 'PLAZODOLAR'
-    """)
-    producto = cur.fetchone()
-    cur.close()
-    conn.close()
+    info_producto = get_producto_info('PLAZODOLAR')
+    
+    if request.method == 'POST':
+        try:
+            monto = request.form.get('monto')
+            tiempo_input = request.form.get('dias')  # El número que escribe el usuario (ej: 60 o 2)
+            tipo_plazo = request.form.get('tipo_plazo') # 'dias' o 'meses' (radio button)
+            cuenta_id = request.form.get('cuenta_id')
+            
+            # --- LÓGICA DE DÍAS VS MESES ---
+            dias_totales = int(tiempo_input)
+            
+            # Si eligió meses, multiplicamos por 30 (estándar bancario simple)
+            if tipo_plazo == 'meses':
+                dias_totales = dias_totales * 30
+            
+            # Enviamos a la BD el total de días ya calculado
+            exito, mensaje = procesar_inversion(
+                id_usuario=current_user.id,
+                id_cuenta=cuenta_id,
+                monto=monto,
+                dias=dias_totales, 
+                tasa=info_producto['tasa']
+            )
+            
+            if exito:
+                flash("¡Inversión realizada con éxito! Revisa tu Dashboard.", "success")
+                return redirect(url_for('dashboard'))
+            else:
+                flash(f"Error al invertir: {mensaje}", "danger")
+        
+        except Exception as e:
+            flash(f"Error inesperado: {e}", "danger")
 
-    # Pasamos los datos a la vista (si no existe, valores por defecto)
-    tasa = producto[0] if producto else 6.50
-    minimo = producto[1] if producto else 500.00
-    plazo_min = producto[2] if producto else 30
+    cuentas = get_cuentas_usuario(current_user.id)
+    if not info_producto:
+        return redirect(url_for('dashboard'))
 
-    return render_template('inversiones/plazodolar.html', tasa=tasa, monto_min=minimo, plazo_min=plazo_min)
+    return render_template('inversiones/plazodolar.html', p=info_producto, cuentas=cuentas)
 
+# --- NUEVA RUTA PARA EL SIMULADOR DE TIEMPO ---
+@inversiones.route('/simular-avance', methods=['POST'])
+@login_required
+def simular_avance():
+    id_inversion = request.form.get('id_inversion')
+    fecha_simulada = request.form.get('fecha_simulada')
+    
+    exito, mensaje = simular_paso_tiempo(id_inversion, fecha_simulada)
+    
+    if exito:
+        flash(mensaje, "success")
+    else:
+        # Usamos 'info' si es solo aviso de tiempo, 'danger' si es error real
+        if "Aún no vence" in mensaje:
+            flash(mensaje, "warning")
+        else:
+            flash(mensaje, "danger")
+            
+    return redirect(url_for('dashboard'))
+
+# RUTA ARMADOLAR (Placeholder)
 @inversiones.route('/armadolar')
 @login_required
 def armadolar():
-    return render_template('inversiones/armadolar.html')
+    return render_template('dashboard.html')

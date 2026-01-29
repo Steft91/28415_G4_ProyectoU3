@@ -1,21 +1,12 @@
 from flask import Flask, render_template
-from flask_login import LoginManager, login_required
+from flask_login import LoginManager, login_required, current_user
 from src.controllers.auth import auth
 from src.controllers.inversiones import inversiones
-from src.models.database import get_db_connection
+from src.models.database import get_db_connection, get_cuentas_usuario, obtener_inversiones_activas # <--- Importaciones Nuevas
 from src.models.entities import User
 
-
-
 app = Flask(__name__)
-# En src/app.py
-@app.route('/dashboard')
-@login_required # Esto asegura que nadie entre sin loguearse
-def dashboard():
-    return render_template('dashboard.html')  
-
-  
-app.secret_key = 'pichincha_secret_key' # Cambia esto por algo más seguro
+app.secret_key = 'pichincha_secret_key'
 
 # Configuración de Flask-Login
 login_manager = LoginManager()
@@ -38,6 +29,20 @@ def load_user(user_id):
 app.register_blueprint(auth)
 app.register_blueprint(inversiones, url_prefix='/inversiones')
 
+# --- RUTA DASHBOARD MODIFICADA ---
+@app.route('/dashboard')
+@login_required 
+def dashboard():
+    # 1. Obtener Cuentas (Para mostrar saldo real en la parte superior)
+    cuentas = get_cuentas_usuario(current_user.id)
+    
+    # 2. Obtener Inversiones Activas (Para el calendario simulador)
+    inversiones_activas = obtener_inversiones_activas(current_user.id)
+    
+    return render_template('dashboard.html', 
+                           cuentas=cuentas, 
+                           inversiones=inversiones_activas)
+# ---------------------------------
 
 if __name__ == '__main__':
     app.run(debug=True)
