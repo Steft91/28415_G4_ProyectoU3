@@ -3,15 +3,19 @@
 <div class="container-fluid vh-100 bg-white">
     <div class="row h-100">
         <div class="col-md-6 d-none d-md-flex flex-column justify-content-center p-5 border-end">
-            <img src="https://www.pichincha.com/portal/Portals/0/logo-pichincha.png" width="180" class="mb-5">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Banco_Pichincha_nuevo.png" width="180" class="mb-5">
             <h2 class="display-6 fw-normal text-navy mb-4">Verifica en tu navegador que estás en Banca Web.</h2>
-            
+<!--             
             <div class="url-badge bg-light rounded-pill p-2 d-inline-block mb-5" style="max-width: 350px;">
                 <span class="text-success mx-2">🔒</span>
                 <small class="text-muted">https://bancaweb.pichincha.com/pichincha/login</small>
+            </div> -->
+
+            <div class="main-image text-center">
+                <img src="https://bancaweb.pichincha.com/assets/main-image.svg" class="img-fluid w-50 mb-4" >
             </div>
 
-            <img src="{{ url_for('static', filename='img/security_illustration.png') }}" class="img-fluid w-50 mb-4">
+            
             
             <div class="security-steps text-muted">
                 <p><strong>01.</strong> Cuida tu usuario y contraseña</p>
@@ -44,17 +48,32 @@
                 </form>
 
                 <div class="row text-center border-top pt-3">
-                    <div class="col-6 border-end">
-                        <a href="#" class="text-decoration-none text-dark small">
-                            🔓 <br> ¿Cuenta bloqueada?<br><span class="text-navy fw-bold">Desbloquéala aquí</span>
-                        </a>
+                <div class="row text-center border-top pt-3">
+                    <div class="col-4 border-end">
+                        <div class="small">
+                            💰 <br>
+                            <span class="fw-bold">Plazo Dólar</span><br>
+                            <span class="text-muted">Inversión a plazo fijo</span>
+                        </div>
                     </div>
-                    <div class="col-6">
-                        <a href="#" class="text-decoration-none text-dark small">
-                            👤 <br> ¿Usuario nuevo?<br><span class="text-navy fw-bold">Regístrate ahora</span>
-                        </a>
+
+                    <div class="col-4 border-end">
+                        <div class="small">
+                            🧩 <br>
+                            <span class="fw-bold">Armadólar</span><br>
+                            <span class="text-muted">Rendimientos periódicos</span>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="small">
+                            ⏳ <br>
+                            <span class="fw-bold">Pago Anticipado</span><br>
+                            <span class="text-muted">Retiro antes del vencimiento</span>
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
