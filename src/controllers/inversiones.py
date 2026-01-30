@@ -68,7 +68,53 @@ def simular_avance():
     return redirect(url_for('dashboard'))
 
 # RUTA ARMADOLAR (Placeholder)
-@inversiones.route('/armadolar')
+@inversiones.route('/armadolar', methods=['GET', 'POST'])
 @login_required
 def armadolar():
-    return render_template('dashboard.html')
+    info_producto = get_producto_info('ARMADOLAR')
+
+    if request.method == 'POST':
+        try:
+            monto = float(request.form.get('monto'))
+            dias = int(request.form.get('dias'))
+            frecuencia = int(request.form.get('frecuencia'))
+            cuenta_id = request.form.get('cuenta_id')
+
+            # 🔒 Validaciones Armadolar
+            if monto < 500:
+                flash("El monto mínimo es $500", "danger")
+                return redirect(url_for('inversiones.armadolar'))
+
+            if dias < 90:
+                flash("El plazo mínimo es 90 días", "danger")
+                return redirect(url_for('inversiones.armadolar'))
+
+            exito, mensaje = procesar_inversion(
+                id_usuario=current_user.id,
+                id_cuenta=cuenta_id,
+                monto=monto,
+                dias=dias,
+                tasa=info_producto['tasa'],
+                frecuencia_pago=frecuencia   # 👈 SOLO ARMADOLAR USA ESTO
+            )
+
+            if exito:
+                flash("¡Tu Armadolar fue creado exitosamente!", "success")
+                return redirect(url_for('dashboard'))
+            else:
+                flash(mensaje, "danger")
+
+        except Exception as e:
+            flash(f"Error inesperado: {e}", "danger")
+
+    cuentas = get_cuentas_usuario(current_user.id)
+
+    if not info_producto:
+        flash("Producto Armadolar no disponible", "danger")
+        return redirect(url_for('dashboard'))
+
+    return render_template(
+        'inversiones/armadolar.html',
+        p=info_producto,
+        cuentas=cuentas
+    )

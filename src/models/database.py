@@ -36,8 +36,9 @@ def get_producto_info(codigo_producto):
     """Obtiene tasa, monto min y plazo min de un producto"""
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT tasa_anual, monto_min, plazo_min_dias FROM INV_PRODUCTO WHERE codigo = %s", (codigo_producto,))
+    cur.execute("SELECT TASA_ANUAL, MONTO_MIN, PLAZO_MIN_DIAS FROM INV_PRODUCTO WHERE CODIGO = %s", (codigo_producto,))
     data = cur.fetchone()
+    print(codigo_producto)
     cur.close()
     conn.close()
     if data:
@@ -63,7 +64,7 @@ def obtener_inversiones_activas(id_usuario):
 
 # --- FUNCIONES TRANSACCIONALES (AQUÍ ESTABA EL ERROR) ---
 
-def procesar_inversion(id_usuario, id_cuenta, monto, dias, tasa):
+def procesar_inversion(id_usuario, id_cuenta, monto, dias, tasa, frecuencia_pago=None):
     """
     Realiza la transacción bancaria completa.
     Calcula la fecha en Python para evitar errores de sintaxis SQL.
