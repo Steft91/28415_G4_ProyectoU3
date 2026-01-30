@@ -134,6 +134,84 @@ def procesar_inversion(id_usuario, id_cuenta, monto, dias, tasa, frecuencia_pago
         cur.close()
         conn.close()
 
+def procesar_pago_anticipado(id_usuario, id_cuenta, monto, dias, tasa):
+    """
+    Procesa una inversión con PAGO ANTICIPADO de intereses.
+    Los intereses se acreditan INMEDIATAMENTE a la cuenta del usuario.
+    El capital queda bloqueado hasta el vencimiento.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    try:
+        # 1. Verificar saldo actual y tipo de cuenta
+        cur.execute("""
+            SELECT saldo_actual, 'AHORRO' as tipo FROM CUENTA_AHORROS WHERE id_cuenta = %s AND id_usuario = %s
+            UNION
+            SELECT saldo_actual, 'CORRIENTE' as tipo FROM CUENTA_CORRIENTE WHERE id_cuenta = %s AND id_usuario = %s
+        """, (id_cuenta, id_usuario, id_cuenta, id_usuario))
+        
+        resultado = cur.fetchone()
+        
+        if not resultado:
+            raise Exception("Cuenta no encontrada o no pertenece al usuario")
+            
+        saldo_actual, tipo_cuenta = resultado
+        monto = float(monto)
+        dias = int(dias)
+        
+        if saldo_actual < monto:
+            raise Exception("Saldo insuficiente")
+
+        # 2. Calcular intereses (que se pagan AHORA)
+        fecha_actual = date.today()
+        fecha_fin = fecha_actual + timedelta(days=dias)
+        
+        interes_ganado = monto * (tasa / 100) * (float(dias) / 360)
+        
+        # 3. Debitar el CAPITAL de la cuenta origen
+        tabla_cuenta = "CUENTA_AHORROS" if tipo_cuenta == 'AHORRO' else "CUENTA_CORRIENTE"
+        query_debito = f"UPDATE {tabla_cuenta} SET saldo_actual = saldo_actual - %s WHERE id_cuenta = %s"
+        cur.execute(query_debito, (monto, id_cuenta))
+
+        # 4. Acreditar INMEDIATAMENTE los INTERESES a la misma cuenta
+        query_credito = f"UPDATE {tabla_cuenta} SET saldo_actual = saldo_actual + %s WHERE id_cuenta = %s"
+        cur.execute(query_credito, (interes_ganado, id_cuenta))
+
+        # 5. Crear la Inversión (solo el capital se devolverá al vencimiento)
+        cur.execute("""
+            INSERT INTO INV_SOLICITUD 
+            (id_cliente, id_producto, origen_fondos, id_cuenta_origen, monto_capital, fecha_inicio, fecha_fin, interes_ganado, total_a_recibir, estado)
+            VALUES (%s, (SELECT id_producto FROM INV_PRODUCTO WHERE CODIGO = 'PAGOANTICIPADO'), %s, %s, %s, %s, %s, %s, %s, 'ACTIVA')
+            RETURNING id_inversion
+        """, (id_usuario, tipo_cuenta, id_cuenta, monto, fecha_actual, fecha_fin, interes_ganado, monto))
+        
+        id_inversion_nueva = cur.fetchone()[0]
+
+        # 6. Registrar el movimiento de débito del capital
+        cur.execute("""
+            INSERT INTO INV_MOVIMIENTO_FINANCIERO (id_inversion, tipo_mov, monto, descripcion)
+            VALUES (%s, 'DEBITO_APERTURA', %s, 'Débito del capital por Pago Anticipado')
+        """, (id_inversion_nueva, monto))
+
+        # 7. Registrar el movimiento de crédito de intereses
+        cur.execute("""
+            INSERT INTO INV_MOVIMIENTO_FINANCIERO (id_inversion, tipo_mov, monto, descripcion)
+            VALUES (%s, 'PAGO_INTERES', %s, 'Pago anticipado de intereses')
+        """, (id_inversion_nueva, interes_ganado))
+
+        conn.commit()
+        return True, f"¡Inversión creada! Intereses de ${interes_ganado:.2f} acreditados inmediatamente."
+
+    except Exception as e:
+        conn.rollback()
+        print(f"ERROR DB: {e}") 
+        return False, str(e)
+    
+    finally:
+        cur.close()
+        conn.close()
+
 def simular_paso_tiempo(id_inversion, fecha_simulada):
     """
     Verifica si la fecha simulada supera la fecha de fin.

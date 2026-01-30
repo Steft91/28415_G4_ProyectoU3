@@ -1,7 +1,7 @@
 # src/controllers/inversiones.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from src.models.database import get_cuentas_usuario, get_producto_info, procesar_inversion, simular_paso_tiempo
+from src.models.database import get_cuentas_usuario, get_producto_info, procesar_inversion, simular_paso_tiempo, procesar_pago_anticipado
 inversiones = Blueprint('inversiones', __name__)
 
 @inversiones.route('/plazo-dolar', methods=['GET', 'POST'])
@@ -115,6 +115,61 @@ def armadolar():
 
     return render_template(
         'inversiones/armadolar.html',
+        p=info_producto,
+        cuentas=cuentas
+    )
+
+# RUTA PAGO ANTICIPADO
+@inversiones.route('/pago-anticipado', methods=['GET', 'POST'])
+@login_required
+def pago_anticipado():
+    info_producto = get_producto_info('PAGOANTICIPADO')
+    
+    if request.method == 'POST':
+        try:
+            monto = float(request.form.get('monto'))
+            dias = int(request.form.get('dias'))
+            cuenta_id = request.form.get('cuenta_id')
+
+            # Validaciones específicas de Pago Anticipado
+            if monto < 500:
+                flash("El monto mínimo es $500", "danger")
+                return redirect(url_for('inversiones.pago_anticipado'))
+
+            if dias < 30:
+                flash("El plazo mínimo es 30 días", "danger")
+                return redirect(url_for('inversiones.pago_anticipado'))
+            
+            if dias > 179:
+                flash("El plazo máximo es 179 días", "danger")
+                return redirect(url_for('inversiones.pago_anticipado'))
+
+            # Procesar con la función especial de pago anticipado
+            exito, mensaje = procesar_pago_anticipado(
+                id_usuario=current_user.id,
+                id_cuenta=cuenta_id,
+                monto=monto,
+                dias=dias,
+                tasa=info_producto['tasa']
+            )
+
+            if exito:
+                flash(mensaje, "success")
+                return redirect(url_for('dashboard'))
+            else:
+                flash(f"Error al invertir: {mensaje}", "danger")
+
+        except Exception as e:
+            flash(f"Error inesperado: {e}", "danger")
+
+    cuentas = get_cuentas_usuario(current_user.id)
+
+    if not info_producto:
+        flash("Producto Pago Anticipado no disponible", "danger")
+        return redirect(url_for('dashboard'))
+
+    return render_template(
+        'inversiones/retiro_anticipado.html',
         p=info_producto,
         cuentas=cuentas
     )

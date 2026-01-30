@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-decoration-none text-muted">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Inversiones</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Pago Anticipado</li>
+            </ol>
+        </nav>
+        <h2 class="text-navy fw-bold">Pago Anticipado - Recibe intereses HOY</h2>
+    </div>
+
+    <div class="row gx-5">
+        <div class="col-md-7 mb-4">
+            <h4 class="text-navy fw-bold mb-3">Liquidez inmediata con tu inversión</h4>
+            <p class="text-muted mb-4">
+                Los intereses se pagan por adelantado al momento de invertir.
+                <br>Desde $500, plazo de 30 a 179 días máximo.
+            </p>
+            <ul class="list-unstyled text-muted mb-4">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Recibe tus intereses <strong>INMEDIATAMENTE</strong>.</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Recuperas el 100% del capital al vencimiento.</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Tasa fija del <strong>{{ p.tasa }}%</strong> anual.</li>
+                <li class="mb-2"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Capital bloqueado hasta el vencimiento.</li>
+            </ul>
+            
+            <div class="border rounded p-3 bg-white">
+                <h6 class="fw-bold text-navy"><i class="bi bi-info-circle me-2"></i>¿Cómo funciona?</h6>
+                <ol class="mb-0 small text-muted">
+                    <li>Depositas el monto (ej. $5,000)</li>
+                    <li>El banco <strong>te acredita los intereses HOY MISMO</strong></li>
+                    <li>Al vencimiento recuperas el capital completo</li>
+                </ol>
+            </div>
+
+            <div class="border rounded p-3 bg-white mt-3">
+                <h6 class="fw-bold text-navy"><i class="bi bi-exclamation-triangle me-2"></i>Restricciones</h6>
+                <ul class="mb-0 small text-muted">
+                    <li>Monto mínimo: <strong>$500</strong></li>
+                    <li>Plazo mínimo: <strong>30 días</strong></li>
+                    <li>Plazo máximo: <strong>179 días</strong></li>
+                    <li>No puedes retirar el capital antes del vencimiento</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow border-0 rounded-3">
+                <div class="card-body p-4">
+                    <h5 class="text-navy fw-bold mb-4">Calculadora de inversión</h5>
+                    
+                    <form id="formSimulador">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Monto a invertir</label>
+                            <div class="input-group border-bottom">
+                                <span class="input-group-text bg-white border-0 fw-bold fs-4 text-navy">$</span>
+                                <input type="number" id="monto" class="form-control border-0 fs-4 fw-bold text-navy shadow-none" 
+                                       placeholder="500.00" min="500" step="0.01">
+                            </div>
+                            <small class="text-danger d-none" id="errorMonto">Monto mínimo $500</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Plazo (días)</label>
+                            <div class="input-group border-bottom">
+                                <input type="number" id="plazo" class="form-control border-0 fs-4 fw-bold text-navy shadow-none" 
+                                       placeholder="30" min="30" max="179">
+                                <span class="input-group-text bg-white border-0 text-muted">días</span>
+                            </div>
+                            <small class="text-danger d-none" id="errorPlazo">Entre 30 y 179 días</small>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="button" id="btnSimular" class="btn btn-warning py-2 fw-bold text-navy">
+                                Calcular
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- RESULTADOS -->
+                    <div id="contenedorResultados" class="mt-4 pt-3 border-top" style="display: none;">
+                        <h6 class="text-navy fw-bold mb-3">Resumen de tu inversión</h6>
+                        
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="p-2 bg-light rounded text-center">
+                                    <small class="d-block text-muted" style="font-size: 0.7rem;">Capital invertido</small>
+                                    <span class="fw-bold text-navy fs-5" id="txtCapital">$0.00</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 bg-light rounded text-center">
+                                    <small class="d-block text-muted" style="font-size: 0.7rem;">Plazo</small>
+                                    <span class="fw-bold text-navy fs-5" id="txtPlazo">0 días</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border rounded p-3 bg-white mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="d-block text-muted" style="font-size: 0.75rem;">Recibes HOY</small>
+                                    <span class="fw-bold fs-4 text-navy" id="txtIntereses">$0.00</span>
+                                </div>
+                                <i class="bi bi-cash-coin fs-1 opacity-25 text-muted"></i>
+                            </div>
+                        </div>
+
+                        <div class="card bg-light border-0 mb-3">
+                            <div class="card-body py-2 px-3">
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">Al vencimiento recibes:</small>
+                                    <span class="fw-bold text-navy" id="txtVencimiento">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SELECCIÓN DE CUENTA -->
+                        <div id="divCuenta" class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Cuenta de origen</label>
+                            <select class="form-select" id="cuentaOrigen">
+                                {% for cuenta in cuentas %}
+                                <option value="{{ cuenta[3] }}" data-saldo="{{ cuenta[2] }}">
+                                    {{ cuenta[0] }} - {{ cuenta[1] }} (Saldo: ${{ "%.2f"|format(cuenta[2]) }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="button" id="btnContinuar" class="btn btn-primary py-2 fw-bold">
+                                Confirmar inversión
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN -->
+<div class="modal fade" id="modalConfirmar" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold">Confirmar inversión</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Estás a punto de realizar una inversión con pago anticipado de intereses:</p>
+                
+                <table class="table table-sm">
+                    <tr>
+                        <td class="text-muted">Capital a invertir:</td>
+                        <td class="text-end fw-bold" id="confMonto">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Plazo:</td>
+                        <td class="text-end fw-bold" id="confPlazo">0 días</td>
+                    </tr>
+                    <tr class="table-success">
+                        <td class="fw-bold">Recibirás HOY:</td>
+                        <td class="text-end fw-bold text-success fs-5" id="confInteres">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Al vencimiento:</td>
+                        <td class="text-end fw-bold" id="confVencimiento">$0.00</td>
+                    </tr>
+                </table>
+
+                <div class="alert alert-info border-0 small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Los intereses se acreditarán inmediatamente a tu cuenta de origen.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" action="{{ url_for('inversiones.pago_anticipado') }}" class="d-inline">
+                    <input type="hidden" name="monto" id="postMonto">
+                    <input type="hidden" name="dias" id="postDias">
+                    <input type="hidden" name="cuenta_id" id="postCuenta">
+                    <button type="submit" class="btn btn-primary fw-bold">Confirmar inversión</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- VARIABLES Y ELEMENTOS DOM ---
+    const TASA = parseFloat("{{ p.tasa }}");  // Tasa fija del producto
+    
+    // Inputs
+    const inputPlazo = document.getElementById('plazo');
+    const inputMonto = document.getElementById('monto');
+    const btnSimular = document.getElementById('btnSimular');
+    
+    // Contenedores
+    const contResultados = document.getElementById('contenedorResultados');
+    const divCuenta = document.getElementById('divCuenta');
+    const btnContinuar = document.getElementById('btnContinuar');
+
+    // Datos de la inversión
+    let datosInversion = {};
+
+    // --- FUNCIÓN PARA CALCULAR INTERÉS ---
+    function calcularIntereses(monto, dias, tasa) {
+        let interes = monto * (tasa / 100) * (dias / 360);
+        return interes;
+    }
+
+    // --- LÓGICA DE SIMULACIÓN ---
+    btnSimular.addEventListener('click', function() {
+        let monto = parseFloat(inputMonto.value);
+        let dias = parseInt(inputPlazo.value);
+
+        // Validaciones
+        document.getElementById('errorMonto').classList.add('d-none');
+        document.getElementById('errorPlazo').classList.add('d-none');
+
+        if (!monto || monto < 500) {
+            document.getElementById('errorMonto').classList.remove('d-none');
+            return;
+        }
+
+        if (!dias || dias < 30 || dias > 179) {
+            document.getElementById('errorPlazo').classList.remove('d-none');
+            return;
+        }
+
+        // Calcular intereses
+        let intereses = calcularIntereses(monto, dias, TASA);
+
+        // Guardar datos
+        datosInversion = {
+            monto: monto,
+            dias: dias,
+            intereses: intereses,
+            capital: monto
+        };
+
+        // Renderizar resultados
+        document.getElementById('txtCapital').innerText = "$" + monto.toFixed(2);
+        document.getElementById('txtPlazo').innerText = dias + " días";
+        document.getElementById('txtIntereses').innerText = "$" + intereses.toFixed(2);
+        document.getElementById('txtVencimiento').innerText = "$" + monto.toFixed(2);
+
+        // Mostrar todo
+        contResultados.style.display = 'block';
+    });
+
+    // --- LÓGICA CONTINUAR (MODAL) ---
+    btnContinuar.addEventListener('click', function() {
+        // Validar Saldo
+        let select = document.getElementById('cuentaOrigen');
+        let saldo = parseFloat(select.options[select.selectedIndex].getAttribute('data-saldo'));
+        
+        if (datosInversion.monto > saldo) {
+            alert("Saldo insuficiente en la cuenta seleccionada");
+            return;
+        }
+
+        // Llenar Modal
+        document.getElementById('confMonto').innerText = "$" + datosInversion.monto.toFixed(2);
+        document.getElementById('confPlazo').innerText = datosInversion.dias + " días";
+        document.getElementById('confInteres').innerText = "$" + datosInversion.intereses.toFixed(2);
+        document.getElementById('confVencimiento').innerText = "$" + datosInversion.capital.toFixed(2);
+
+        // Preparar FORM POST
+        document.getElementById('postMonto').value = datosInversion.monto;
+        document.getElementById('postDias').value = datosInversion.dias;
+        document.getElementById('postCuenta').value = select.value;
+
+        // Mostrar
+        var myModal = new bootstrap.Modal(document.getElementById('modalConfirmar'));
+        myModal.show();
+    });
+</script>
+
+<style>
+    .text-navy {
+        color: #003d82;
+    }
+    
+    .btn-primary {
+        background-color: #003d82;
+        border-color: #003d82;
+    }
+    
+    .btn-primary:hover {
+        background-color: #002557;
+        border-color: #002557;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #ffc800;
+        box-shadow: 0 0 0 0.2rem rgba(255, 200, 0, 0.25);
+    }
+</style>
+{% endblock %}

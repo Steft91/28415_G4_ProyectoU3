@@ -4,8 +4,13 @@ from src.controllers.auth import auth
 from src.controllers.inversiones import inversiones
 from src.models.database import get_db_connection, get_cuentas_usuario, obtener_inversiones_activas # <--- Importaciones Nuevas
 from src.models.entities import User
+import os
 
-app = Flask(__name__)
+# Configurar rutas de templates y static
+template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'views'))
+static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'static'))
+
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 app.secret_key = 'pichincha_secret_key'
 
 # Configuración de Flask-Login
