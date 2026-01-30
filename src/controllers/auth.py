@@ -1,6 +1,6 @@
 # src/controllers/auth.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_user
+from flask_login import login_user, logout_user
 from werkzeug.security import check_password_hash
 from src.models.database import get_db_connection
 from src.models.entities import User
@@ -35,3 +35,8 @@ def login():
             flash("Credenciales inválidas")
             
     return render_template('login.html')
+
+@auth.route('/logout')
+def logout():
+    logout_user() # Esto borra la sesión del usuario
+    return redirect(url_for('auth.login')) # Te devuelve a la pantalla de login

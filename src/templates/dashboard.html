@@ -6,7 +6,7 @@
             <img src="{{ url_for('static', filename='img/logo_pichincha.png') }}" alt="Logo" width="150">
         </a>
         <div class="d-flex align-items-center">
-            <span class="me-3 text-navy small">Bienvenido, <strong>{{ current_user.username }}</strong></span>
+            <span class="me-3 text-navy small">Hola, <strong>{{ current_user.username }}</strong></span>
             <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">Cerrar Sesión</a>
         </div>
     </div>
@@ -16,43 +16,108 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-md-7 px-5">
-                <h1 class="display-5 fw-bold text-navy">Depósitos a plazo fijo – Inversiones para Personas</h1>
-                <p class="lead text-navy mb-4">Rentabiliza tu dinero con una inversión a una tasa de interés conveniente.</p>
-                <button class="btn btn-navy px-4 py-2 fw-bold">Invierte en línea</button>
+                <h1 class="display-5 fw-bold text-navy">Mis Productos</h1>
+                <p class="lead text-navy mb-4">Gestiona tus cuentas y simula el retorno de tus inversiones.</p>
             </div>
             <div class="col-md-5 text-center">
-                <img src="{{ url_for('static', filename='img/banner_person.png') }}" class="img-fluid" style="max-height: 300px;">
-            </div>
+                </div>
         </div>
     </div>
 </div>
 
-<div class="container mb-5">
-    <ul class="nav nav-tabs border-0 mb-4">
-        <li class="nav-item">
-            <a class="nav-link active fw-bold border-0 border-bottom border-3 border-warning text-navy" href="#">Inversiones</a>
-        </li>
-        <li class="nav-item"><a class="nav-link text-muted border-0" href="#">Productos</a></li>
-        <li class="nav-item"><a class="nav-link text-muted border-0" href="#">Beneficios</a></li>
-        <li class="nav-item"><a class="nav-link text-muted border-0" href="#">Servicios</a></li>
-    </ul>
+<div class="container pb-5">
 
-    <h5 class="text-navy fw-bold mb-4">¿Qué estás buscando?</h5>
-    
-    <div class="row g-4">
+    <div class="row mb-5">
+        <h4 class="text-navy fw-bold mb-3 border-bottom pb-2">Mis Cuentas</h4>
+        {% for cuenta in cuentas %}
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0 border-start border-4 border-warning h-100">
+                <div class="card-body">
+                    <small class="text-muted text-uppercase fw-bold">{{ cuenta[0] }}</small> <h5 class="fw-bold text-navy mt-1">{{ cuenta[1] }}</h5> <div class="mt-3">
+                        <small class="text-muted">Saldo Disponible</small>
+                        <h3 class="fw-bold text-success">$ {{ cuenta[2] }}</h3> </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12"><p class="text-muted">No se encontraron cuentas asociadas.</p></div>
+        {% endfor %}
+    </div>
+
+    {% if inversiones %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h4 class="text-navy fw-bold mb-3 border-bottom pb-2">
+                <i class="bi bi-graph-up-arrow"></i> Inversiones Activas (Simulación de Tiempo)
+            </h4>
+        </div>
+        
+        {% for inv in inversiones %}
+        <div class="col-md-6 mb-4">
+            <div class="card shadow border-0 h-100">
+                <div class="card-header bg-navy text-white d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">Inversión #{{ inv[0] }}</span>
+                    <span class="badge bg-warning text-dark">ACTIVA</span>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div>
+                            <small class="text-muted d-block">Monto Invertido</small>
+                            <span class="fw-bold fs-5 text-navy">$ {{ inv[1] }}</span>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted d-block">Recibirás (Capital+Interés)</small>
+                            <span class="fw-bold fs-5 text-success">$ {{ inv[3] }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-light border small">
+                        <div class="d-flex justify-content-between">
+                            <span>Fecha Inicio:</span> <strong>{{ inv[7] }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Fecha Vencimiento:</span> <strong class="text-danger">{{ inv[4] }}</strong>
+                        </div>
+                    </div>
+
+                    <hr>
+                    
+                    <label class="form-label text-navy fw-bold small"><i class="bi bi-calendar-check"></i> Simular fecha futura:</label>
+                    <form action="{{ url_for('inversiones.simular_avance') }}" method="POST" class="d-flex gap-2">
+                        <input type="hidden" name="id_inversion" value="{{ inv[0] }}">
+                        
+                        <input type="date" name="fecha_simulada" class="form-control" required 
+                               min="{{ inv[7] }}"> 
+                        
+                        <button type="submit" class="btn btn-warning text-navy fw-bold text-nowrap">
+                            Verificar / Abonar
+                        </button>
+                    </form>
+                    <small class="text-muted fst-italic mt-1 d-block" style="font-size: 0.75rem;">
+                        Selecciona una fecha posterior al vencimiento para recibir los fondos.
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row gx-4 gy-4">
+        <h4 class="text-navy fw-bold mb-3 border-bottom pb-2">Catálogo de Inversiones</h4>
+        
         <div class="col-md-4">
             <div class="card h-100 shadow-sm border-0 investment-card">
                 <div class="card-body p-4">
-                    <span class="badge bg-light-green text-success mb-2">EN LÍNEA</span>
                     <p class="text-muted small mb-1">Depósito a plazo</p>
-                    <h4 class="card-title text-navy fw-bold">Plazodolar – depósito a plazo fijo</h4>
-                    <div class="mt-5">
-                        <p class="mb-0 text-muted">Desde</p>
-                        <h3 class="fw-bold text-navy">$500</h3>
+                    <h4 class="card-title text-navy fw-bold">Plazodolar</h4>
+                    <div class="mt-4">
+                        <h5 class="text-navy">Simula tu inversión</h5>
+                        <p class="card-text text-muted small">Desde $500 y elige cuándo recibir tus rendimientos.</p>
                     </div>
                 </div>
                 <div class="card-footer bg-white border-0 p-4">
-                    <a href="{{ url_for('inversiones.plazodolar') }}" class="stretched-link"></a>
+                    <a href="{{ url_for('inversiones.plazodolar') }}" class="btn btn-outline-primary w-100 stretched-link">Simular ahora</a>
                 </div>
             </div>
         </div>
@@ -60,14 +125,15 @@
         <div class="col-md-4">
             <div class="card h-100 shadow-sm border-0 investment-card">
                 <div class="card-body p-4">
-                    <p class="text-muted small mb-1">Depósito a plazo</p>
+                    <p class="text-muted small mb-1">Ahorro Programado</p>
                     <h4 class="card-title text-navy fw-bold">Armadolar</h4>
-                    <div class="mt-5">
-                        <h5 class="text-navy">Arma tu inversión</h5>
+                    <div class="mt-4">
+                        <h5 class="text-navy">Arma tu ahorro</h5>
+                        <p class="card-text text-muted small">Programa tu ahorro mensual y recibe intereses.</p>
                     </div>
                 </div>
                 <div class="card-footer bg-white border-0 p-4">
-                    <a href="{{ url_for('inversiones.armadolar') }}" class="stretched-link"></a>
+                    <a href="{{ url_for('inversiones.armadolar') }}" class="btn btn-outline-primary w-100 stretched-link">Conocer más</a>
                 </div>
             </div>
         </div>
@@ -76,13 +142,14 @@
             <div class="card h-100 shadow-sm border-0 investment-card">
                 <div class="card-body p-4">
                     <p class="text-muted small mb-1">Depósito a plazo</p>
-                    <h4 class="card-title text-navy fw-bold">Pago anticipado</h4>
-                    <div class="mt-5">
-                        <h5 class="text-navy">Intereses al inicio</h5>
+                    <h4 class="card-title text-navy fw-bold">Pago Anticipado</h4>
+                    <div class="mt-4">
+                        <h5 class="text-navy">Interés por adelantado</h5>
+                        <p class="card-text text-muted small">Recibe tus intereses al inicio del periodo.</p>
                     </div>
                 </div>
                 <div class="card-footer bg-white border-0 p-4">
-                    <a href="#" class="stretched-link"></a>
+                    <a href="#" class="btn btn-outline-primary w-100 stretched-link">Próximamente</a>
                 </div>
             </div>
         </div>

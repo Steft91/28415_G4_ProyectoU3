@@ -10,7 +10,7 @@ def crear_usuario_nuevo():
 
     cur = conn.cursor()
     # 1. Definimos las credenciales
-    nuevo_usuario = 'user_test1'
+    nuevo_usuario = 'user_test'
     clave_plana = 'pichincha2026'
     
     # 2. Generamos el HASH (esto es lo que se guarda)
@@ -21,7 +21,7 @@ def crear_usuario_nuevo():
         cur.execute("""
             INSERT INTO usuarios (username, password_hash, cedula, nombre_completo)
             VALUES (%s, %s, %s, %s) RETURNING id_usuario
-        """, (nuevo_usuario, password_encriptada, '1722582317', 'Usuario de Pruebas'))
+        """, (nuevo_usuario, password_encriptada, '1799887766', 'Usuario de Pruebas'))
         
         id_generado = cur.fetchone()[0]
 
@@ -29,7 +29,7 @@ def crear_usuario_nuevo():
         cur.execute("""
             INSERT INTO cuenta_ahorros (n_cuenta, id_usuario, saldo_actual)
             VALUES (%s, %s, %s)
-        """, ('2200001123', id_generado, 5000.00))
+        """, ('2200001122', id_generado, 5000.00))
 
         conn.commit() # 👈 SIN ESTO, LOS CAMBIOS NO SE GUARDAN EN POSTGRES
         
